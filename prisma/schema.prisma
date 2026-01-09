@@ -1,0 +1,320 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19zMTJXUjZWclgxdGdZeFNlSUpRV1QiLCJhcGlfa2V5IjoiMDFLOUVRRVZNNTdDNEs3MFpSN0pLTUMzOVQiLCJ0ZW5hbnRfaWQiOiI2NzQwOTg5M2UzZWEyZTVjMzYxMzE1N2IzZjI1NzQyMjM3YjI5YmEzZTRmYzgzNzRhN2NlM2I1YjYyZDhmOTdhIiwiaW50ZXJuYWxfc2VjcmV0IjoiNmQ5NWFiNjItYmViYy00MGQxLThjM2EtODIxNmY4YmZkY2UxIn0.HwfWDvLV-SKKLCFxcYMp9Bcsw2u-l0F2bYAhmQ14mWs"
+}
+
+model Account {
+  id            String  @id @default(cuid())
+  userId        Int
+  provider      String
+  refresh_token String? //@db.Text
+  access_token  String? //@db.Text
+  expires_at    Int?
+  token_type    String?
+  scope         String?
+  id_token      String? //@db.Text
+  session_state String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accountId             String
+  providerId            String?
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([provider, providerId])
+  @@map("account")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    Int
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+
+  impersonatedBy String?
+
+  @@unique([token])
+  @@map("session")
+}
+
+model User {
+  id              Int            @id @default(autoincrement())
+  name            String?
+  email           String?        @unique
+  password        String?
+  emailVerified   Boolean?
+  image           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  role            String
+  accounts        Account[]
+  sessions        Session[]
+  quizzes         Quiz[]
+  gameResults     GameResult[]
+  ActionLog       ActionLog[]
+  Admin           Admin?
+  FlashcardSet    FlashcardSet[]
+  statistics      Statistics?
+  statisticsWeekly StatisticsWeeklyReport[]
+  username        String?
+  displayUsername String?
+
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  @@unique([username])
+  @@map("user")
+}
+
+model Statistics {
+  id                  String @id @default(cuid())
+  user                User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              Int
+  totalQuizsCreated   Int    @default(0)
+  totalGamesHosted    Int    @default(0)
+  xpCount             Int    @default(0)
+  timeSpentLearning   Int    @default(0)
+  credits             Int    @default(0)
+  totalWins           Int    @default(0)
+  totalCorrectAnswers Int    @default(0)
+  totalCrates         Int    @default(0)
+
+  @@map("statistics")
+  @@unique([userId])
+}
+
+model StatisticsWeeklyReport {
+  id                  String @id @default(cuid())
+  user                User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              Int
+  totalQuizsCreated   Int    @default(0)
+  totalGamesHosted    Int    @default(0)
+  xpCount             Int    @default(0)
+  timeSpentLearning   Int    @default(0)
+  credits             Int    @default(0)
+  totalWins           Int    @default(0)
+  totalCorrectAnswers Int    @default(0)
+  totalCrates         Int    @default(0)
+  createdAt           DateTime       @default(now())
+
+  @@map("statisticsWeeklyReport")
+  @@unique([userId])
+}
+
+model WebsiteStatus {
+  id            String            @id @default("singleton") // Enforce singleton via fixed ID
+  maintenance   Boolean           @default(false)
+  temporaryDown Boolean           @default(false)
+  bannerMessage String?
+  statusCode    WebsiteStatusCode @default(OPERATIONAL)
+  lastChecked   DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+enum WebsiteStatusCode {
+  OPERATIONAL
+  MAINTENANCE
+  DEGRADED
+  OUTAGE
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Quiz {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  isPublic    Boolean    @default(false)
+  coverImage  String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  authorId    Int
+  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  games       Game[]
+
+  @@index([authorId])
+}
+
+model Question {
+  id        String           @id @default(cuid())
+  text      String
+  imageUrl  String?
+  timeLimit Int              @default(30)
+  points    Int              @default(100)
+  type      QuestionType     @default(MULTIPLE_CHOICE)
+  quizId    String
+  quiz      Quiz             @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options   QuestionOption[]
+
+  @@index([quizId])
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  LIST_ORDER
+  SELECT
+}
+
+model QuestionOption {
+  id         String   @id @default(cuid())
+  text       String
+  isCorrect  Boolean
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+}
+
+model VersionLog {
+  id        String   @id @default(cuid())
+  version   String
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model News {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActionLog {
+  id        String   @id @default(cuid())
+  action    String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Admin {
+  id        String          @id @default(cuid())
+  userId    Int             @unique
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String // e.g. SUPERADMIN, MODERATOR
+  createdAt DateTime        @default(now())
+  logs      AdminLogTable[]
+}
+
+model AdminLogTable {
+  id        String   @id @default(cuid())
+  adminId   String
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+}
+
+model FlashcardSet {
+  id          String             @id @default(cuid())
+  title       String
+  description String?
+  authorId    Int
+  author      User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  subdecks    FlashcardSubdeck[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model FlashcardSubdeck {
+  id           String             @id @default(cuid())
+  title        String
+  setId        String
+  flashcardSet FlashcardSet       @relation(fields: [setId], references: [id], onDelete: Cascade)
+  parentId     String? // self-referencing field
+  parent       FlashcardSubdeck?  @relation("SubdeckToSubdeck", fields: [parentId], references: [id])
+  children     FlashcardSubdeck[] @relation("SubdeckToSubdeck")
+  flashcards   Flashcard[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+}
+
+model Flashcard {
+  id        String           @id @default(cuid())
+  question  String
+  answer    String
+  subdeckId String
+  subdeck   FlashcardSubdeck @relation(fields: [subdeckId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model Game {
+  id        String       @id @default(cuid())
+  authorId  String
+  code      String       @unique
+  status    GameStatus   @default(WAITING)
+  createdAt DateTime     @default(now())
+  startedAt DateTime?
+  endedAt   DateTime?
+  quizId    String
+  quiz      Quiz         @relation(fields: [quizId], references: [id])
+  results   GameResult[]
+
+  @@index([quizId])
+}
+
+enum GameStatus {
+  WAITING
+  ACTIVE
+  FINISHED
+}
+
+model GameResult {
+  id             String   @id @default(cuid())
+  score          Int      @default(0)
+  correctAnswers Int      @default(0)
+  gameId         String
+  game           Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  userId         Int
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  answers        Json?
+
+  @@unique([gameId, userId])
+  @@index([gameId])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
