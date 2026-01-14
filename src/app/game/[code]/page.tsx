@@ -13,6 +13,7 @@ import { useTheme } from "~/components/theme/ThemeProvider";
 import { Button } from "~/components/ui/button";
 import { getWS } from "@/components/connections/wsClient";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 type GameState =
   | "lobby"
@@ -27,12 +28,13 @@ type GameState =
 export default function GamePage({ params }: { params: { code: string } }) {
   const [gameState, setGameState] = useState<GameState>("default");
   const router = useRouter();
+  const [nickname, SetNickname] = useState("N/A");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [isGameFinished, setGameFinished] = useState(false);
   const [viewingAnswers, setViewingAnswers] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const [isHost, SetIsHost] = useState(undefined);
+  const [isHost, SetIsHost] = useState(false);
   const [players, setPlayers] = useState([
     { id: "1", name: "Player 1", score: 0, avatar: "👨‍🎓" },
     { id: "2", name: "Player 2", score: 0, avatar: "👩‍🎓" },
@@ -84,10 +86,15 @@ export default function GamePage({ params }: { params: { code: string } }) {
         setQuestions(parsed.lobby.quiz.questions);
 
         if (parsed.isHost) {
+          //toast.info("You are host");
           setGameState("scoreboard");
+          SetIsHost(true);
         }
         if (parsed.isPlayer) {
+          //toast("You are player");
           setGameState("question");
+          SetIsHost(false);
+          SetNickname(parsed.user.nickname);
         }
       }
 
@@ -117,40 +124,40 @@ export default function GamePage({ params }: { params: { code: string } }) {
   }, [ws]);
 
   // simulate game flow
-  useEffect(() => {
-    const timer = setTimeout(
-      () => {
-        if (gameState === "lobby") {
-          //setGameState('question');
-        } else if (gameState === "question") {
-          // after question timer expires, show scoreboard
-          if (currentQuestionIndex < questions.length) {
-            setGameState("scoreboard");
-            // Update player scores
-            setPlayers(
-              players.map((player) => ({
-                ...player,
-                score: player.score + Math.floor(Math.random() * 1000),
-              }))
-            );
-          }
-        } else if (gameState === "scoreboard") {
-          if (currentQuestionIndex < MOCK_QUESTIONS.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-            setGameState("question");
-          } else {
-            setGameState("results");
-          }
-        }
-      },
-      gameState === "lobby"
-        ? 5000
-        : gameState === "question"
-          ? currentQuestion.timeLimit * 1000
-          : 3000
-    );
-    return () => clearTimeout(timer);
-  }, [gameState, currentQuestionIndex, currentQuestion]);
+  // useEffect(() => {
+  //   const timer = setTimeout(
+  //     () => {
+  //       if (gameState === "lobby") {
+  //         //setGameState('question');
+  //       } else if (gameState === "question") {
+  //         // after question timer expires, show scoreboard
+  //         if (currentQuestionIndex < questions.length) {
+  //           setGameState("scoreboard");
+  //           // Update player scores
+  //           setPlayers(
+  //             players.map((player) => ({
+  //               ...player,
+  //               score: player.score + Math.floor(Math.random() * 1000),
+  //             }))
+  //           );
+  //         }
+  //       } else if (gameState === "scoreboard") {
+  //         if (currentQuestionIndex < MOCK_QUESTIONS.length - 1) {
+  //           setCurrentQuestionIndex(currentQuestionIndex + 1);
+  //           setGameState("question");
+  //         } else {
+  //           setGameState("results");
+  //         }
+  //       }
+  //     },
+  //     gameState === "lobby"
+  //       ? 5000
+  //       : gameState === "question"
+  //         ? currentQuestion.timeLimit * 1000
+  //         : 3000
+  //   );
+  //   return () => clearTimeout(timer);
+  // }, [gameState, currentQuestionIndex, currentQuestion]);
 
   const handleAnswer = (option: any) => {
     setViewingAnswers(true);
@@ -233,7 +240,7 @@ export default function GamePage({ params }: { params: { code: string } }) {
                     zapit
                   </text>
                 </g>
-
+                {/* Row 2 offset */}
                 <g transform="translate(100,50)">
                   <path
                     viewBox="0 0 24 24"
@@ -310,7 +317,7 @@ export default function GamePage({ params }: { params: { code: string } }) {
                       zapit
                     </text>
                   </g>
-
+                  {/* Row 2 offset */}
                   <g transform="translate(100,50)">
                     <path
                       viewBox="0 0 24 24"
@@ -383,7 +390,7 @@ export default function GamePage({ params }: { params: { code: string } }) {
                       d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
                     />
                   </g>
-
+                  {/* Row 2 offset */}
                   <g transform="translate(100,50)">
                     <path
                       className="scale-160 fill-accent stroke-accent"
@@ -450,7 +457,7 @@ export default function GamePage({ params }: { params: { code: string } }) {
                     <FaFire className="w-full h-full text-primary" />
                     <span className="text-sm absolute -translate-7.5">2</span>
                   </div>
-                  <p>Player: ShiningBeacon</p>
+                  <p>Player: {nickname}</p>
                 </div>
               </div>
             </div>

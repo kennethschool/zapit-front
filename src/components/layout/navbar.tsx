@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { authClient } from "@/lib/auth-client";
 import useMounted from "@/lib/useMount";
-import { SkeletonCircle } from "../default/ui";
 
 const Nav = () => {
   const mounted = useMounted();
@@ -100,7 +99,7 @@ const Nav = () => {
           </span>
         </Link>
 
-        {/* Desktop navi */}
+        {/* Desktop navigation */}
         <nav className="hidden md:flex flex-1 justify-center space-x-6">
           <Link
             href="/dashboard"
@@ -193,9 +192,9 @@ const Nav = () => {
               </div>
             )
           ) : (
-            <SkeletonCircle className="h-8 w-8" />
+            <></>
           )}
-          {/* mobile */}
+          {/* Mobile menu button */}
           <Button
             variant="ghost"
             size="sm"

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PiHandTapFill } from "react-icons/pi";
 import { Check, X } from "lucide-react";
 import { useState } from "react";
+import { Progress } from "../ui/progress";
 
 interface Question {
   id: string;
@@ -82,7 +83,7 @@ export function GameQuestion({
   const colorMap = [
     "bg-blue-500 hover:bg-blue-600",
     "bg-red-500 hover:bg-red-600",
-    "bg-yellow-500 hover:bg-yellow-600 text-black",
+    "bg-yellow-500 hover:bg-yellow-600",
     "bg-green-500 hover:bg-green-600",
   ];
 
@@ -124,20 +125,24 @@ export function GameQuestion({
           <div className="text-sm font-medium text-muted-foreground">
             Question {questionNumber} of {totalQuestions}
           </div>
+          <Progress
+            value={((questionNumber - 1) / totalQuestions) * 100}
+            className="h-2 w-1/2  place-self-center-safe my-4 bg-foreground/5 transition-all"
+          />
         </div>
 
         <motion.div
-          className="text-center mb-12 w-7xl mx-auto bg-muted p-6 rounded-lg"
+          className="text-center mb-12 md:w-2xl xl:w-7xl mx-auto bg-muted/75 p-6 rounded-lg"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <span className="text-2xl md:text-3xl font-bold mb-2">
+          <span className="text-2xl md:text-3xl font-bold mb-2 transform transition-all duration-500">
             {question.question}
           </span>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-7xl mx-auto w-full ">
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 max-w-7xl mx-auto w-full ">
           <AnimatePresence>
             {question.options.map((option, index) => (
               <motion.div
@@ -147,7 +152,7 @@ export function GameQuestion({
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
                 <Button
-                  className={`w-full h-48 text-3xl font-medium ${viewAnswers ? (option.isCorrect ? "bg-green-500" : "bg-red-500") : colorMap[index]}`}
+                  className={`w-full rounded-xl text-white h-48 text-5xl font-medium ${viewAnswers ? (option.isCorrect ? "bg-green-500" : "bg-red-500") : colorMap[index]}`}
                   onClick={() => handleOptionClick(option)}
                   disabled={isAnswerSubmitted}
                 >
@@ -174,7 +179,7 @@ export function GameQuestion({
           ) : (
             <Button
               variant={"outline"}
-              onClick={() => [handleFinish()]}
+              onClick={() => [handleFinishiningbeacon()]}
               className="w-full"
             >
               Finish
