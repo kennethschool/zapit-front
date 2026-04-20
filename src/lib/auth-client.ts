@@ -7,7 +7,7 @@ import {
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-  baseURL: "https://dn4ghw-3000.csb.app/",
+  baseURL: "https://app.kenchongo.com/",
   plugins: [
     magicLinkClient(),
     adminClient(),

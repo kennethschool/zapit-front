@@ -45,11 +45,20 @@ export default function HostPage() {
   const [quizzes, setQuizzes] = useState([]);
 
   useEffect(() => {
-    if (!session?.user?.id) return; // wait until session is ready
+    //if (!session?.user?.id) return; // wait until session is ready
+
+    // const getQuizzes = async () => {
+    //   const response = await fetch(
+    //     `/api/v1/quizzes?authorId=${session.user.id}`
+    //   );
+
+    //   const data = await response.json();
+    //   setQuizzes(data.quizzes);
+    // };
 
     const getQuizzes = async () => {
       const response = await fetch(
-        `/api/v1/quizzes?authorId=${session.user.id}`
+        `/api/v1/quizzes`,
       );
 
       const data = await response.json();
@@ -79,7 +88,7 @@ export default function HostPage() {
           lobbyCode: 12345,
           quiz,
           hostData: session?.user,
-        })
+        }),
       );
     } else {
       console.log("Socket not ready yet");
@@ -131,9 +140,8 @@ export default function HostPage() {
       </div>
 
       <Tabs defaultValue="myQuizzes" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+        <TabsList className="grid w-full grid-cols-1 max-w-md mx-auto">
           <TabsTrigger value="myQuizzes">My Quizzes</TabsTrigger>
-          <TabsTrigger value="recentlyHosted">Recently Hosted</TabsTrigger>
         </TabsList>
 
         <TabsContent value="myQuizzes">
@@ -262,10 +270,6 @@ export default function HostPage() {
               </DrawerContent>
             </Drawer>
           </div>
-        </TabsContent>
-
-        <TabsContent value="recentlyHosted">
-          <RecentlyHostedGames />
         </TabsContent>
       </Tabs>
 

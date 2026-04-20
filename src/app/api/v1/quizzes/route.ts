@@ -8,19 +8,19 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { title, description, isPublic, authorId, questions } = body;
 
-    if (!title || !authorId || !questions) {
-      return NextResponse.json(
-        { message: "Missing required fields" },
-        { status: 400 }
-      );
-    }
+    // if (!title || !authorId || !questions) {
+    //   return NextResponse.json(
+    //     { message: "Missing required fields" },
+    //     { status: 400 }
+    //   );
+    // }
 
     const quiz = await prisma.quiz.create({
       data: {
         title,
         description,
         isPublic,
-        authorId,
+        authorId: 1,
         questions: {
           create: questions.map((q: any) => ({
             text: q.text,
@@ -70,6 +70,8 @@ export async function GET(req: Request) {
           },
         },
       });
+
+      console.log(quizzes)
 
       return NextResponse.json({ quizzes }, { status: 200 });
     }

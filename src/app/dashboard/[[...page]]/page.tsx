@@ -27,7 +27,7 @@ import MyStats from "~/components/dashboard/my-stats";
 import { useParams, usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import AIOverview from "@/components/dashboard/aioverview";
-import MyZaplits from "@/components/dashboard/myzaplits";
+
 
 export default function DashboardPage() {
   const [notifications, setNotifications] = useState(3);
@@ -175,7 +175,7 @@ export default function DashboardPage() {
               <TabsTrigger value="ai-overview">My AI Overview</TabsTrigger>
 
               <TabsTrigger value="my-flashcards">My Flashcards</TabsTrigger>
-              <TabsTrigger value="my-zaplits">My Zaplits</TabsTrigger>
+              -
               <TabsTrigger value="history">My Game History</TabsTrigger>
             </TabsList>
           ) : (
@@ -278,9 +278,7 @@ export default function DashboardPage() {
           <TabsContent value="ai-overview">
             <AIOverview />
           </TabsContent>
-          <TabsContent value="my-zaplits">
-            <MyZaplits />
-          </TabsContent>
+        
         </Tabs>
 
         <NewsFeed />
